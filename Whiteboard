@@ -1,0 +1,50 @@
+import React, { useState, useEffect } from 'react';
+import { Stage, Layer, Line } from 'react-konva';
+
+const Whiteboard = () => {
+  const [color, setColor] = useState('black');
+  const [brushSize, setBrushSize] = useState(5);
+  const [canvasState, setCanvasState] = useState([]);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+
+  useEffect(() => {
+    // Initialize the canvas context
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = color;
+    ctx.lineWidth = brushSize;
+  }, [color, brushSize]);
+
+  const handleDraw = (event) => {
+    // Handle drawing on the canvas
+    const ctx = event.target.getContext('2d');
+    ctx.beginPath();
+    ctx.moveTo(event.clientX, event.clientY);
+    ctx.lineTo(event.clientX + 1, event.clientY + 1);
+    ctx.stroke();
+    setCanvasState([...canvasState, ctx.getImageData(0, 0, canvas.width, canvas.height)]);
+  };
+
+  const handleUndo = () => {
+    // Handle undo action
+    if (undoStack.length > 0) {
+      setCanvasState(undoStack.pop());
+    }
+  };
+
+  const handleRedo = () => {
+    // Handle redo action
+    if (redoStack.length > 0) {
+      setCanvasState(redoStack.pop());
+    }
+  };
+
+  return (
+    <div>
+      <Stage width={800} height={600}>
+        <Layer>
+          <Line
+            x={0}
+            y={0}
+            points={[
